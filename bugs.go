@@ -1,0 +1,5 @@
+package bugs
+
+func init() {
+
+}
