@@ -1,4 +1,4 @@
-package rdb
+package xorm
 
 import (
 	"github.com/go-xorm/xorm"
