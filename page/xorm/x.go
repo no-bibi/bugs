@@ -11,15 +11,13 @@ import (
 )
 
 type Xorm struct {
-	DB    interface{}   //各个库的db
-	Query []interface{} //查询参数
-	opt   *options.Options
+	db  interface{} //各个库的db
+	opt *options.Options
 }
 
 func (this *Xorm) New(db interface{}) page.Page {
 	obj := &Xorm{
-		DB:    db,
-		Query: make([]interface{}, 0),
+		db: db,
 	}
 	return obj
 }
@@ -31,8 +29,15 @@ func (this *Xorm) Opt(opt *options.Options) page.Page {
 
 func (this *Xorm) Where(query interface{}, args ...interface{}) page.Page {
 
-	this.Query = append(this.Query, query)
-	this.Query = append(this.Query, args...)
+	switch this.db.(type) {
+	case *xorm.EngineGroup:
+		this.db = this.db.(*xorm.EngineGroup).Where(query, args...)
+	case *xorm.Session:
+		this.db = this.db.(*xorm.Session).Where(query, args...)
+	default:
+		panic(`db type is not support`)
+	}
+
 	return this
 }
 
@@ -40,11 +45,11 @@ func (this *Xorm) Page(data interface{}) page.Result {
 
 	var session *xorm.Session
 
-	switch this.DB.(type) {
+	switch this.db.(type) {
 	case *xorm.EngineGroup:
-		session = this.DB.(*xorm.EngineGroup).Where(this.Query[0], this.Query[1:]...)
+		session = this.db.(*xorm.EngineGroup).NewSession()
 	case *xorm.Session:
-		session = this.DB.(*xorm.Session).Where(this.Query[0], this.Query[1:]...)
+		session = this.db.(*xorm.Session)
 	default:
 		panic(`db type is not support`)
 	}
