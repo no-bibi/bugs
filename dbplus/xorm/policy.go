@@ -57,15 +57,14 @@ func AliveRoundRobinPolicy() xorm.GroupPolicyHandler {
 				pos = 0
 			}
 
-			if len(notWorking.List) == len(slaves) {
+			if len(notWorking.List) >= len(slaves) {
 				return group.Engine
 			}
 
 			_, exist := notWorking.List[pos]
 			if !exist || counter >= len(slaves) {
-				break
+				return slaves[pos]
 			}
 		}
-		return slaves[pos]
 	}
 }

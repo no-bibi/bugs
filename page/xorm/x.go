@@ -59,6 +59,14 @@ func (this *Xorm) Page(data interface{}) page.Result {
 		panic(err)
 	}
 
+	//always make sure data is [] not null
+	arr, ok := data.([]interface{})
+	if ok {
+		if len(arr) == 0 {
+			data = make([]interface{}, 0)
+		}
+	}
+
 	return page.Result{
 		Count:       int(count),
 		Records:     data,
