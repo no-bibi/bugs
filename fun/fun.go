@@ -99,3 +99,16 @@ func Clone(obj interface{}) (i interface{}) {
 	}
 	return
 }
+
+//copy and "make"
+func MakeClone(data interface{}) interface{} {
+
+	if reflect.ValueOf(data).Elem().Len() == 0 {
+		t := reflect.ValueOf(data).Elem().Type()
+		arr := reflect.MakeSlice(t, 0, 0)
+		data := reflect.New(reflect.ValueOf(data).Elem().Type())
+		data.Elem().Set(arr)
+		return data.Interface()
+	}
+	return data
+}
