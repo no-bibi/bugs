@@ -5,7 +5,6 @@ import (
 	"github.com/go-xorm/xorm"
 	"github.com/no-bibi/bugs/page"
 	"github.com/no-bibi/bugs/page/options"
-	"log"
 	"math"
 	"reflect"
 	"strings"
@@ -62,13 +61,9 @@ func (this *Xorm) Page(data interface{}) page.Result {
 	}
 
 	//always make sure data is [] not null
-	arr, ok := data.([]interface{})
-	if ok {
-		if len(arr) == 0 {
-			data = make([]interface{}, 0)
-		}
-	} else {
-		log.Println(reflect.TypeOf(data))
+
+	if reflect.ValueOf(data).Elem().Len() == 0 {
+		data = make([]interface{}, 0)
 	}
 
 	return page.Result{
