@@ -36,9 +36,18 @@ func (this *Xorm) Where(query interface{}, args ...interface{}) page.Page {
 }
 
 func (this *Xorm) Page(data interface{}) page.Result {
-	db := this.DB.(*xorm.EngineGroup)
 
-	session := db.Where(this.Query[0], this.Query[1:]...)
+	var session *xorm.Session
+
+	switch this.DB.(type) {
+	case *xorm.EngineGroup:
+		session = this.DB.(*xorm.EngineGroup).Where(this.Query[0], this.Query[1:]...)
+	case *xorm.Session:
+		session = this.DB.(*xorm.Session).Where(this.Query[0], this.Query[1:]...)
+	default:
+		panic(`db type is not support`)
+	}
+
 	if len(this.opt.OrderBy) > 0 {
 		for _, o := range this.opt.OrderBy {
 

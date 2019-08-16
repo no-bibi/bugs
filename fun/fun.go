@@ -102,7 +102,6 @@ func Clone(obj interface{}) (i interface{}) {
 
 //copy and "make"
 func MakeClone(data interface{}) interface{} {
-
 	if reflect.ValueOf(data).Elem().Len() == 0 {
 		t := reflect.ValueOf(data).Elem().Type()
 		data := reflect.New(t)
