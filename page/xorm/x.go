@@ -6,7 +6,6 @@ import (
 	"github.com/no-bibi/bugs/page"
 	"github.com/no-bibi/bugs/page/options"
 	"math"
-	"reflect"
 	"strings"
 )
 
@@ -61,10 +60,10 @@ func (this *Xorm) Page(data interface{}) page.Result {
 	}
 
 	//always make sure data is [] not null
-	if reflect.ValueOf(data).Elem().Len() == 0 {
-		original := reflect.MakeSlice(reflect.ValueOf(data).Elem().Type(), 0, 0).Interface()
-		data = original
-	}
+	//if reflect.ValueOf(data).Elem().Len() == 0 {
+	//	original := reflect.MakeSlice(reflect.ValueOf(data).Elem().Type(), 0, 0).Interface()
+	//	data = &original
+	//}
 
 	return page.Result{
 		Count:       int(count),
