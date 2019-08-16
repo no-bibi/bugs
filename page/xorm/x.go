@@ -63,6 +63,7 @@ func (this *Xorm) Page(data interface{}) page.Result {
 	//always make sure data is [] not null
 	if reflect.ValueOf(data).Elem().Len() == 0 {
 		data = reflect.MakeSlice(reflect.ValueOf(data).Elem().Type(), 0, 0).Interface()
+		data = &data
 	}
 
 	return page.Result{
