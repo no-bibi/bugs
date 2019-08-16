@@ -17,8 +17,11 @@ type Xorm struct {
 }
 
 func (this *Xorm) New(db interface{}) page.Page {
-	this.DB = db
-	return this
+	obj := &Xorm{
+		DB:    db,
+		Query: make([]interface{}, 0),
+	}
+	return obj
 }
 
 func (this *Xorm) Opt(opt *options.Options) page.Page {
@@ -28,10 +31,8 @@ func (this *Xorm) Opt(opt *options.Options) page.Page {
 
 func (this *Xorm) Where(query interface{}, args ...interface{}) page.Page {
 
-	q := make([]interface{}, 0)
-	q = append(q, query)
-	q = append(q, args...)
-	this.Query = q
+	this.Query = append(this.Query, query)
+	this.Query = append(this.Query, args...)
 	return this
 }
 
