@@ -105,7 +105,7 @@ func MakeClone(data interface{}) interface{} {
 
 	if reflect.ValueOf(data).Elem().Len() == 0 {
 		t := reflect.ValueOf(data).Elem().Type()
-		data := reflect.New(reflect.ValueOf(data).Elem().Type())
+		data := reflect.New(t)
 		data.Elem().Set(reflect.MakeSlice(t, 0, 0))
 		return data.Interface()
 	}
