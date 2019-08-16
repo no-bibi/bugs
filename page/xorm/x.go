@@ -61,10 +61,8 @@ func (this *Xorm) Page(data interface{}) page.Result {
 	}
 
 	//always make sure data is [] not null
-
 	if reflect.ValueOf(data).Elem().Len() == 0 {
-		rs := make([]interface{}, 0)
-		data = &rs
+		data = reflect.MakeSlice(reflect.ValueOf(data).Elem().Type(), 0, 0).Interface()
 	}
 
 	return page.Result{
