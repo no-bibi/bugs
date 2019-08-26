@@ -16,19 +16,21 @@ type Xorm struct {
 }
 
 func (this *Xorm) New(db interface{}) page.Page {
-	switch this.db.(type) {
+
+	var session interface{}
+	switch db.(type) {
 	case *xorm.EngineGroup:
-		this.db = this.db.(*xorm.EngineGroup).NewSession()
+		session = db.(*xorm.EngineGroup).NewSession()
 	case *xorm.Engine:
-		this.db = this.db.(*xorm.Engine).NewSession()
+		session = db.(*xorm.Engine).NewSession()
 	case *xorm.Session:
-		this.db = db
+		session = db
 	default:
 		panic(`db type is not support`)
 	}
 
 	obj := &Xorm{
-		db: db,
+		db: session,
 	}
 	return obj
 }
