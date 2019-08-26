@@ -11,11 +11,22 @@ import (
 )
 
 type Xorm struct {
-	db  interface{} //各个库的db
-	opt *options.Options
+	db interface{} //各个库的db session
+	*options.Options
 }
 
 func (this *Xorm) New(db interface{}) page.Page {
+	switch this.db.(type) {
+	case *xorm.EngineGroup:
+		this.db = this.db.(*xorm.EngineGroup).NewSession()
+	case *xorm.Engine:
+		this.db = this.db.(*xorm.Engine).NewSession()
+	case *xorm.Session:
+		this.db = db
+	default:
+		panic(`db type is not support`)
+	}
+
 	obj := &Xorm{
 		db: db,
 	}
@@ -23,55 +34,41 @@ func (this *Xorm) New(db interface{}) page.Page {
 }
 
 func (this *Xorm) Opt(opt *options.Options) page.Page {
-	this.opt = opt
-	return this
-}
 
-func (this *Xorm) Where(query interface{}, args ...interface{}) page.Page {
-
-	switch this.db.(type) {
-	case *xorm.EngineGroup:
-		this.db = this.db.(*xorm.EngineGroup).Where(query, args...)
-	case *xorm.Session:
-		this.db = this.db.(*xorm.Session).Where(query, args...)
-	default:
-		panic(`db type is not support`)
-	}
-
-	return this
-}
-
-func (this *Xorm) Page(data interface{}) page.Result {
-
-	var session *xorm.Session
-
-	switch this.db.(type) {
-	case *xorm.EngineGroup:
-		session = this.db.(*xorm.EngineGroup).NewSession()
-	case *xorm.Session:
-		session = this.db.(*xorm.Session)
-	default:
-		panic(`db type is not support`)
-	}
-
-	if len(this.opt.OrderBy) > 0 {
-		for _, o := range this.opt.OrderBy {
-
+	if len(opt.OrderBy) > 0 {
+		for _, o := range opt.OrderBy {
 			//处理排序字符
 			if strings.Index(o, "-") == 0 {
 				o = fmt.Sprintf("`%s` desc", strings.TrimLeft(o, "-"))
 			} else {
 				o = fmt.Sprintf("`%s`", o)
 			}
-			session.OrderBy(o)
+			this.db.(*xorm.Session).OrderBy(o)
 		}
 	}
+
+	this.db.(*xorm.Session).Limit(opt.Limit, opt.Offset)
+	this.Options = opt
+	return this
+}
+
+func (this *Xorm) Where(query interface{}, args ...interface{}) page.Page {
+	this.db = this.db.(*xorm.Session).Where(query, args...)
+	return this
+}
+
+func (this *Xorm) Select(columns ...string) page.Page {
+	this.db = this.db.(*xorm.Session).Cols(columns...)
+	return this
+}
+
+func (this *Xorm) Page(data interface{}) page.Result {
 
 	var (
 		count int64
 		err   error
 	)
-	if count, err = session.Limit(this.opt.Limit, this.opt.Offset).FindAndCount(data); err != nil {
+	if count, err = this.db.(*xorm.Session).FindAndCount(data); err != nil {
 		panic(err)
 	}
 
@@ -81,9 +78,9 @@ func (this *Xorm) Page(data interface{}) page.Result {
 	return page.Result{
 		Count:       int(count),
 		Records:     data,
-		CurrentPage: this.opt.Page,
-		Limit:       this.opt.Limit,
-		TotalPage:   int(math.Ceil(float64(count) / float64(this.opt.Limit))),
+		CurrentPage: this.Options.Page,
+		Limit:       this.Limit,
+		TotalPage:   int(math.Ceil(float64(count) / float64(this.Limit))),
 	}
 
 }

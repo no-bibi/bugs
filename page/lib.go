@@ -36,9 +36,10 @@ func New(name string, db interface{}) Page {
 
 type Page interface {
 	New(db interface{}) Page
-	Opt(opt *options.Options) Page
+	Opt(opt *options.Options) Page                     //分页大小，页数，排序
 	Where(query interface{}, args ...interface{}) Page //设置查询参数
-	Page(data interface{}) Result
+	Select(columns ...string) Page                     //查询字段
+	Page(data interface{}) Result                      //执行结果
 }
 
 //分页返回
