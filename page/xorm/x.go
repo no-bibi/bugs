@@ -67,10 +67,12 @@ func (this *Xorm) Select(columns ...string) page.Page {
 
 func (this *Xorm) Page(data interface{}) (p page.Result, err error) {
 
-	s := this.db.(*xorm.Session)
 	var (
 		count int64
+		s     = this.db.(*xorm.Session)
+		conds = s.Conds()
 	)
+
 	if err = s.Find(data); err != nil {
 		return
 	}
@@ -81,7 +83,7 @@ func (this *Xorm) Page(data interface{}) (p page.Result, err error) {
 		sliceElementType = sliceElementType.Elem()
 	}
 
-	if count, err = this.db.(*xorm.Session).Count(reflect.New(sliceElementType).Interface()); err != nil {
+	if count, err = s.Where(conds).Count(reflect.New(sliceElementType).Interface()); err != nil {
 		return
 	}
 
