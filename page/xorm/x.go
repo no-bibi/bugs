@@ -7,6 +7,7 @@ import (
 	"github.com/no-bibi/bugs/page"
 	"github.com/no-bibi/bugs/page/options"
 	"math"
+	"reflect"
 	"strings"
 )
 
@@ -64,26 +65,37 @@ func (this *Xorm) Select(columns ...string) page.Page {
 	return this
 }
 
-func (this *Xorm) Page(data interface{}) page.Result {
+func (this *Xorm) Page(data interface{}) (p page.Result, err error) {
 
+	s := this.db.(*xorm.Session)
 	var (
 		count int64
-		err   error
 	)
-	if count, err = this.db.(*xorm.Session).FindAndCount(data); err != nil {
-		panic(err)
+	if err = s.Find(data); err != nil {
+		return
+	}
+
+	sliceValue := reflect.Indirect(reflect.ValueOf(data))
+	sliceElementType := sliceValue.Type().Elem()
+	if sliceElementType.Kind() == reflect.Ptr {
+		sliceElementType = sliceElementType.Elem()
+	}
+
+	if count, err = this.db.(*xorm.Session).Count(reflect.New(sliceElementType).Interface()); err != nil {
+		return
 	}
 
 	//always make sure data is [] not null
 	data = fun.MakeClone(data)
 
-	return page.Result{
+	p = page.Result{
 		Count:       int(count),
 		Records:     data,
 		CurrentPage: this.Options.Page,
 		Limit:       this.Limit,
 		TotalPage:   int(math.Ceil(float64(count) / float64(this.Limit))),
 	}
+	return
 
 }
 

@@ -39,7 +39,7 @@ type Page interface {
 	Opt(opt *options.Options) Page                     //分页大小，页数，排序
 	Where(query interface{}, args ...interface{}) Page //设置查询参数
 	Select(columns ...string) Page                     //查询字段
-	Page(data interface{}) Result                      //执行结果
+	Page(data interface{}) (Result, error)             //执行结果
 }
 
 //分页返回
